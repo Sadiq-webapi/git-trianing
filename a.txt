@@ -1,4 +1,2 @@
-<<<<<<< HEAD
-hi from "sadiq branch"
-=======
+hi from sadiq branch
 
