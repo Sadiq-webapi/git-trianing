@@ -1,2 +1,3 @@
 hi from 
-sadiq branch
+master branch
+>>>>>>> master
