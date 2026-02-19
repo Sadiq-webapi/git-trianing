@@ -1,4 +1,9 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 this is from master
+=======
+this is from 
+sadiq
+>>>>>>> b2cdcf4 (changes made in new.txt)
