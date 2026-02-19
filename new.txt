@@ -1,3 +1,2 @@
-this is from master 
-
-new.txt
+hello world 
+sadiq added
