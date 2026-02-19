@@ -1,7 +1,2 @@
-<<<<<<< HEAD
-hello world
-master updated
-=======
-hello world 
-sadiq added
->>>>>>> 7cf0d18c2a9d683d63f261fc576603a1858969ea
+hello 
+from sadiq
