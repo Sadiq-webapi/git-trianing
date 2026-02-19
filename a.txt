@@ -1,3 +1,2 @@
-hi from 
-master branch
->>>>>>> master
+hi from sadiq
+
