@@ -1,9 +1,3 @@
+this is from master 
 
-this is from 
-
-<<<<<<< HEAD
-master
-=======
-
-sadiq
->>>>>>> feeba4e6c57299b06be2c1506517d91b20f1c263
+new.txt
