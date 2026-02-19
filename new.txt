@@ -1,7 +1,4 @@
-this is from 
-<<<<<<< HEAD
 
-"sadiq"
-=======
-sadiq
->>>>>>> b2cdcf41e4ccc005f30a4c382e30abc142f508cc
+hello
+from master
+>>>>>>> f20a266 (changes made in new,txt)
