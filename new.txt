@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 
 hello
 from master
 >>>>>>> f20a266 (changes made in new,txt)
+=======
+this is from 
+sadiq
+>>>>>>> 31a1d92 (changes made in new.txt)
