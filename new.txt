@@ -1,12 +1,1 @@
-<<<<<<< HEAD
-hello 
-from master
-=======
-<<<<<<< HEAD
-hello world
-master updated
-=======
-hello world 
-sadiq added
->>>>>>> 7cf0d18c2a9d683d63f261fc576603a1858969ea
->>>>>>> 7a46fa6e9411b69e554f3d1083b42eb1f8b9df1a
+this is from master
