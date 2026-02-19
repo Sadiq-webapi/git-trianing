@@ -1,2 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 this is from master
+=======
+this is from 
+sadiq
+>>>>>>> 31a1d92 (changes made in new.txt)
