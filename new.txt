@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 this is from sadiq
 
@@ -8,3 +9,6 @@ this is from sadiq
 
 this is from master
 
+=======
+this is from sadiq
+>>>>>>> 119a3509195f00d1a4f87655423f4ee0f82ed9c2
