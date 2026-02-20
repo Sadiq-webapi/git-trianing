@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 
 this is from sadiq
 
@@ -6,12 +6,3 @@ this is from sadiq
 
 
 
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-this is from master
-=======
-this is from 
-sadiq
->>>>>>> 31a1d92 (changes made in new.txt)
->>>>>>> 2fff257 (changes made in new.txt)
