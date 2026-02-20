@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-
-
-this is from 
-"master"
+this is from sadiq
 
 
 
