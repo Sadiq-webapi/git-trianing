@@ -29,7 +29,7 @@ pipeline {
         sh '''
         docker stop peaceful_torvalds
         docker rm peaceful_torvalds
-        docker run -d --name myapp -p 9000:80 dockerfile
+        docker run -d -p 9000:80 dockerfile
         '''
     }
 }
