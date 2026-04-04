@@ -27,8 +27,8 @@ pipeline {
         stage("docker") {
             steps {
                bat '''
-                docker stop bb27a10c7539
-                docker rm  bb27a10c7539
+                docker stop peaceful_torvalds
+                docker rm  peaceful_torvalds
                 docker run -d -p 9001:80 dockerfile
                 '''
             }
