@@ -27,7 +27,7 @@ pipeline {
      stage("docker") {
     steps {
         sh '''
-        docker run -d --name myubuntu
+        docker run -d --name myubuntu ubuntu
         docker run -d -p 9000:80 dockerfile
         '''
     }
