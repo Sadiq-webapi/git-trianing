@@ -1,19 +1,22 @@
-pipeline{
+pipeline {
     agent any
-    stages
-    {
-        stage("git-checkout")
-        {
-            git url:'https://github.com/Sadiq-webapi/git-trianing.git',branch:'master'
+
+    stages {
+        stage("git-checkout") {
+            steps {
+                git branch: 'main',   // or 'master' if your repo uses master
+                    url: 'git@github.com:Sadiq-webapi/git-trianing.git',
+                    credentialsId: 'github-ssh'   // ID of your Jenkins SSH credential
+            }
         }
-        stage('build')
-        {
-            steps{
+
+        stage("build") {
+            steps {
                 sh '''
+                echo "Building project..."
                 printenv
                 '''
             }
-
         }
     }
 }
