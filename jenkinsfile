@@ -16,5 +16,22 @@ pipeline {
                 '''
             }
         }
+ stage("docker-build") {
+            steps {
+                sh '''
+                docker build -t myapp:latest .
+                '''
+            }
+        }
+
+        stage("docker-run") {
+            steps {
+                sh '''
+                docker run -d -p 8080:80 myapp:latest
+                '''
+            }
+        }
+    }
+}
     }
 }
