@@ -27,7 +27,7 @@ pipeline {
      stage("docker") {
     steps {
         sh '''
-        docker run -d --name mynginx -p 8081:80 nginx
+        docker run -d --name myubuntu
         docker run -d -p 9000:80 dockerfile
         '''
     }
