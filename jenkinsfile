@@ -27,8 +27,8 @@ pipeline {
         stage("docker") {
             steps {
                bat '''
-                docker stop 8ae5b9a0a262
-                docker rm  8ae5b9a0a262
+                docker stop bb27a10c7539
+                docker rm  bb27a10c7539
                 docker run -d -p 9001:80 dockerfile
                 '''
             }
