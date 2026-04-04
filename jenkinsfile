@@ -27,7 +27,7 @@ pipeline {
         stage("docker-run") {
             steps {
                bat '''
-                docker run -d -p 8080:80 myapp:latest
+                docker run -d -p 9000:80 myapp:latest
                 '''
             }
         }
