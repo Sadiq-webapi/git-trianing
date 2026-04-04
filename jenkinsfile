@@ -10,7 +10,7 @@ pipeline {
 
         stage("build") {
             steps {
-                sh '''
+                bat'''
                 echo "Building project..."
                 printenv
                 '''
@@ -18,7 +18,7 @@ pipeline {
         }
  stage("docker-build") {
             steps {
-                sh '''
+                bat '''
                 docker build -t myapp:latest .
                 '''
             }
@@ -26,7 +26,7 @@ pipeline {
 
         stage("docker-run") {
             steps {
-                sh '''
+               bat '''
                 docker run -d -p 8080:80 myapp:latest
                 '''
             }
