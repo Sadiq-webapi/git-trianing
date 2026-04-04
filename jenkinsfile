@@ -6,7 +6,7 @@ pipeline {
             steps {
                 git branch: 'main',   // or 'master' depending on your repo
                     url: 'git@github.com:Sadiq-webapi/git-trianing.git',
-                    credentialsId: 'github-ssh'
+                    credentialsId: 'github-token'
             }
         }
 
