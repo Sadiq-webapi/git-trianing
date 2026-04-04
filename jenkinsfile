@@ -1,14 +1,15 @@
 pipeline {
     agent any
 
-    stages {
-        stage("git-checkout") {
-            steps {
-                git branch: 'main',   // or 'master' if your repo uses master
-                    url: 'git@github.com:Sadiq-webapi/git-trianing.git',
-                    credentialsId: 'github-ssh'   // ID of your Jenkins SSH credential
-            }
-        }
+   stage("git-checkout") {
+    steps {
+        git branch: 'main',   // or 'master' depending on your repo
+            url: 'git@github.com:Sadiq-webapi/git-trianing.git',
+            credentialsId: 'github-ssh',
+            gitTool: 'Git'
+    }
+}
+
 
         stage("build") {
             steps {
