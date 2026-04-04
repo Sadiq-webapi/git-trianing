@@ -24,15 +24,16 @@ pipeline {
             }
         }
 
-        stage("docker") {
-            steps {
-               sh'''
-                docker stop peaceful_torvalds
-                docker rm  peaceful_torvalds
-                docker run -d -p 9001:80 dockerfile
-                '''
-            }
-        }
+      stage("docker") {
+    steps {
+        sh '''
+        docker stop peaceful_torvalds || true
+        docker rm peaceful_torvalds || true
+        docker run -d --name peaceful_torvalds -p 9001:80 dockerfile
+        '''
+    }
+}
+
     }
 }
 
