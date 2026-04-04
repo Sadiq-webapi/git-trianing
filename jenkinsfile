@@ -27,7 +27,7 @@ pipeline {
      stage("docker") {
     steps {
         sh '''
-        docker run -it -d f794f40ddfff
+        docker run -d mynginx
         docker run -d -p 9000:80 dockerfile
         '''
     }
