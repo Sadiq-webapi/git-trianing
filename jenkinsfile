@@ -27,8 +27,7 @@ pipeline {
      stage("docker") {
     steps {
         sh '''
-        docker stop peaceful_torvalds
-        docker rm peaceful_torvalds
+        docker start peaceful_torvalds
         docker run -d -p 9000:80 dockerfile
         '''
     }
