@@ -10,15 +10,15 @@ pipeline {
 
         stage("build") {
             steps {
-                bat'''
+                sh'''
                 echo "Building project..."
-                set
+                env
                 '''
             }
         }
  stage("docker-build") {
             steps {
-                bat '''
+                sh'''
                 docker build -t dockerfile .
                 '''
             }
@@ -26,7 +26,7 @@ pipeline {
 
         stage("docker") {
             steps {
-               bat '''
+               sh'''
                 docker stop peaceful_torvalds
                 docker rm  peaceful_torvalds
                 docker run -d -p 9001:80 dockerfile
