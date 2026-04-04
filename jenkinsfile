@@ -10,14 +10,13 @@ pipeline {
 
         stage("build") {
             steps {
-               bat'''
+                bat'''
                 echo "Building project..."
-                env
+                set
                 '''
             }
         }
-        
-        stage("docker-build") {
+ stage("docker-build") {
             steps {
                 bat '''
                 docker build -t myapp:latest .
@@ -34,3 +33,4 @@ pipeline {
         }
     }
 }
+
