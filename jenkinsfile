@@ -1,15 +1,14 @@
 pipeline {
     agent any
 
-   stage("git-checkout") {
-    steps {
-        git branch: 'main',   // or 'master' depending on your repo
-            url: 'git@github.com:Sadiq-webapi/git-trianing.git',
-            credentialsId: 'github-ssh',
-            gitTool: 'Git'
-    }
-}
-
+    stages {
+        stage("git-checkout") {
+            steps {
+                git branch: 'main',   // or 'master' depending on your repo
+                    url: 'git@github.com:Sadiq-webapi/git-trianing.git',
+                    credentialsId: 'github-ssh'
+            }
+        }
 
         stage("build") {
             steps {
