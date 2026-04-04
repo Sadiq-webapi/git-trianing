@@ -4,8 +4,7 @@ pipeline {
     stages {
         stage("git-checkout") {
             steps {
-                git branch: 'main',   // or 'master' depending on your repo
-                    url:'https://github.com/Sadiq-webapi/git-trianing.git',
+                git branch: 'master', url: 'https://github.com/Sadiq-webapi/git-trianing.git'
                     credentialsId: 'github-ssh'
             }
         }
