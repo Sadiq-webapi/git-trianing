@@ -1,5 +1,5 @@
-FROM openjdk:21-slim
+FROM eclipse-temurin:21-jdk
 WORKDIR /app
 COPY . .
-RUN javac Main.java
-CMD ["java", "Main"]
+RUN mvn clean package
+CMD ["java", "-jar", "target/yourapp.jar"]
