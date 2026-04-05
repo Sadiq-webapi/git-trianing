@@ -27,7 +27,7 @@ pipeline {
      stage("docker-run") {
     steps {
         sh '''
-        docker run -d mango:latest
+        docker run -d mongo:latest
         docker run -d -p 9000:80 dockerfile
         '''
     }
