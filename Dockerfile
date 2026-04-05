@@ -1,9 +1,9 @@
-FROM maven:3.9.9-eclipse-temurin-21
-
+FROM maven:3.9.9-eclipse-temurin-21 AS builder
 WORKDIR /app
 COPY . .
-
 RUN mvn clean package
 
-CMD ["java", "-jar", "target/yourapp.jar"]
-
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
+CMD ["java", "-jar", "app.jar"]
