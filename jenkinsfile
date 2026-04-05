@@ -39,7 +39,7 @@ pipeline {
             steps {
                 sh '''
                 docker run -d mongo:latest
-                docker run -d -p 9000:80 $DOCKER_USERNAME/myapp:${BUILD_NUMBER}
+                docker run -d -p 9000:80 mohamedsadiq9741/myapp:88
                 '''
             }
         }
