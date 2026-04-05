@@ -45,6 +45,8 @@ pipeline {
         stage("pushing-to-registry") {
             steps {
                 sh '''
+                docker build -t mohamedsadiq9741/myapp:latest .
+                docker push mohamedsadiq9741/myapp:latest
                 docker push mydockerhubuser/dockerfile:latest
                 '''
             }
