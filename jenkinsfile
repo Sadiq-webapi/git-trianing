@@ -42,13 +42,21 @@ pipeline {
             }
         }
 
-        stage("pushing-to-registry") {
-            steps {
-                sh '''
-                docker build -t ${DOCKER_USERNAME}/myapp:${BUILD_NUMBER} .
-                docker push ${DOCKER_USERNAME}/myapp:${BUILD_NUMBER}
-                '''
-            }
-        }
+       stage("docker-build") {
+    steps {
+        sh """
+        docker build -t ${DOCKER_USERNAME}/myapp:${BUILD_NUMBER} .
+        """
+    }
+}
+
+stage("pushing-to-registry") {
+    steps {
+        sh """
+        docker push ${DOCKER_USERNAME}/myapp:${BUILD_NUMBER}
+        """
+    }
+}
+
     }
 }
