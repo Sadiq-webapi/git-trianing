@@ -19,18 +19,19 @@ pipeline {
 
         stage("docker-build") {
             steps {
-                sh '''
-                docker build -t mydockerhubuser/dockerfile:latest .
-                '''
+                sh """
+                docker build -t ${DOCKER_USERNAME}/myapp:${BUILD_NUMBER} .
+                docker tag ${DOCKER_USERNAME}/myapp:${BUILD_NUMBER} ${DOCKER_USERNAME}/myapp:latest
+                """
             }
         }
 
         stage("docker-run") {
             steps {
-                sh '''
+                sh """
                 docker run -d mongo:latest
-                docker run -d -p 9000:80 mydockerhubuser/dockerfile:latest
-                '''
+                docker run -d -p 9000:80 ${DOCKER_USERNAME}/myapp:${BUILD_NUMBER}
+                """
             }
         }
 
@@ -42,21 +43,13 @@ pipeline {
             }
         }
 
-       stage("docker-build") {
-    steps {
-        sh """
-        docker build -t ${DOCKER_USERNAME}/myapp:${BUILD_NUMBER} .
-        """
-    }
-}
-
-stage("pushing-to-registry") {
-    steps {
-        sh """
-        docker push ${DOCKER_USERNAME}/myapp:${BUILD_NUMBER}
-        """
-    }
-}
-
+        stage("pushing-to-registry") {
+            steps {
+                sh """
+                docker push ${DOCKER_USERNAME}/myapp:${BUILD_NUMBER}
+                docker push ${DOCKER_USERNAME}/myapp:latest
+                """
+            }
+        }
     }
 }
