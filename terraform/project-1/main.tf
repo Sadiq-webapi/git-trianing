@@ -1,5 +1,5 @@
 terraform {
-    required_version="1.14.8"
+  required_version = "1.14.8"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -11,7 +11,12 @@ terraform {
 provider "aws" {
   region = "ap-south-2"
 }
-resource "aws_instance" "my-aws_instance"
-{
 
+resource "aws_instance" "my-aws_instance" {
+  ami           = "ami-0c1a7f89451184c8b"   # Example Amazon Linux 2023 AMI for ap-south-2
+  instance_type = "t2.micro"                # Free-tier eligible instance type
+
+  tags = {
+    Name = "MyEC2Instance"
+  }
 }
