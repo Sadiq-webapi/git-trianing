@@ -1,19 +1,47 @@
-pipeline{
+pipeline {
     agent any
-    stages
-    {
-        stage("git-checkout")
-        {
-            git url:'https://github.com/Sadiq-webapi/git-trianing.git',branch:'master'
+
+    stages {
+        stage("git-checkout") {
+            steps {
+                git branch: 'master', url: 'https://github.com/Sadiq-webapi/git-trianing.git'
+            }
         }
-        stage('build')
-        {
-            steps{
+
+        stage("build") {
+            steps {
                 sh '''
-                printenv
+                echo "Building project..."
+                env
                 '''
             }
+        }
 
+        stage("docker-build-and-push") {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', 
+                                                 passwordVariable: 'DOCKER_PASSWORD', 
+                                                 usernameVariable: 'DOCKER_USERNAME')]) {
+                    sh '''
+                    echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+
+                    docker build -t $DOCKER_USERNAME/myapp:${BUILD_NUMBER} .
+                    docker tag $DOCKER_USERNAME/myapp:${BUILD_NUMBER} $DOCKER_USERNAME/myapp:latest
+
+                    docker push $DOCKER_USERNAME/myapp:${BUILD_NUMBER}
+                    docker push $DOCKER_USERNAME/myapp:latest
+                    '''
+                }
+            }
+        }
+
+        stage("docker-run") {
+            steps {
+                sh '''
+                docker run -d mongo:latest
+                docker run -d -p 9000:80 mohamedsadiq9741/myapp:88
+                '''
+            }
         }
     }
 }
