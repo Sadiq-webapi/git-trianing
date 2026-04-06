@@ -9,12 +9,14 @@ terraform {
 }
 
 provider "aws" {
-  region = "ap-south-2"
+  region     = "ap-south-2"
+  access_key = "YOUR_AWS_ACCESS_KEY_ID"
+  secret_key = "YOUR_AWS_SECRET_ACCESS_KEY"
 }
 
 resource "aws_instance" "my-aws_instance" {
   ami           = "ami-0c1a7f89451184c8b"   # Example Amazon Linux 2023 AMI for ap-south-2
-  instance_type = "t2.micro"                # Free-tier eligible instance type
+  instance_type = "t2.micro"
 
   tags = {
     Name = "MyEC2Instance"
