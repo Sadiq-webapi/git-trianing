@@ -14,7 +14,7 @@ provider "aws" {
 
 resource "aws_instance" "my-aws_instance" {
   ami           = "ami-0c1a7f89451184c8b"   # Example Amazon Linux 2023 AMI for ap-south-2
-  instance_type = "t2.micro"
+  instance_type = "t3.micro"
 
   tags = {
     Name = "MyEC2Instance"
