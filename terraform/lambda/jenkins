@@ -12,15 +12,16 @@ pipeline {
             }
         }
 
-        stage('Install Terraform') {
-            steps {
-                sh '''
-                curl -fsSL https://releases.hashicorp.com/terraform/1.7.5/terraform_1.7.5_linux_amd64.zip -o terraform.zip
-                unzip terraform.zip
-                sudo mv terraform /usr/local/bin/
-                '''
-            }
-        }
+       stage('Install Terraform') {
+    steps {
+        bat '''
+        curl -fsSL https://releases.hashicorp.com/terraform/1.7.5/terraform_1.7.5_windows_amd64.zip -o terraform.zip
+        powershell -Command "Expand-Archive -Path terraform.zip -DestinationPath . -Force"
+        move terraform.exe C:\\Windows\\System32\\terraform.exe
+        '''
+    }
+}
+
 
         stage('Terraform Init') {
             steps {
