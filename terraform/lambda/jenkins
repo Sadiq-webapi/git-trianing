@@ -12,16 +12,6 @@ pipeline {
             }
         }
 
-        stage('Install Terraform') {
-            steps {
-                bat '''
-                curl -fsSL https://releases.hashicorp.com/terraform/1.7.5/terraform_1.7.5_windows_amd64.zip -o terraform.zip
-                powershell -Command "Expand-Archive -Path terraform.zip -DestinationPath . -Force"
-                set PATH=%PATH%;%CD%
-                '''
-            }
-        }
-
         stage('Terraform Init') {
             steps {
                 bat 'terraform init'
