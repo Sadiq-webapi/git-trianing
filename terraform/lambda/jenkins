@@ -12,14 +12,12 @@ pipeline {
             }
         }
 
-        stage('Package Lambda') {
-            steps {
-                // Create the zip inside terraform/lambda so Terraform can find it
-                bat '''
-                powershell -Command "Compress-Archive -Path src\\index.js -DestinationPath terraform\\lambda\\lambda_function_payload.zip -Force"
-                '''
-            }
-        }
+       stage('Package Lambda') {
+    steps {
+        bat '"C:\\Program Files\\7-Zip\\7z.exe" a -tzip terraform\\lambda\\lambda_function_payload.zip src\\index.js'
+    }
+}
+
 
         stage('Terraform Init') {
             steps {
