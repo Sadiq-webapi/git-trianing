@@ -3,7 +3,7 @@ resource "aws_s3_bucket" "my_bucket" {
   acl    = "private"
 
   tags = {
-    Name        = "jenkins-demo-s3-bucket"
+    Name        = "sadiq-demo-s3-bucket"
     Environment = "Dev"
   }
 }
