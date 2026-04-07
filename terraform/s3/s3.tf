@@ -1,9 +1,13 @@
 resource "aws_s3_bucket" "my_bucket" {
-  bucket = "my-unique-bucket-name-12345"
+  bucket = "jenkins-s3-demo-bucket"
   acl    = "private"
 
+  versioning {
+    enabled = true
+  }
+
   tags = {
-    Name        = "sadiq-demo-s3-bucket"
     Environment = "Dev"
+    Name        = "MyBucket"
   }
 }
