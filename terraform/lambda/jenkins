@@ -12,12 +12,12 @@ pipeline {
             }
         }
 
-     stage('Package Lambda') {
+   stage('Package Lambda') {
     steps {
-        bat '""C:\Program Files\7-Zip\7z.exe" a -tzip terraform\lambda\lambda_function_payload.zip terraform\lambda\index.js
-'
+        bat '"C:\\Program Files\\7-Zip\\7z.exe" a -tzip terraform\\lambda\\lambda_function_payload.zip terraform\\lambda\\index.js'
     }
 }
+
 
 
         stage('Terraform Init') {
