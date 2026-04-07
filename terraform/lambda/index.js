@@ -8,7 +8,7 @@ exports.handler = async (event) => {
 
 
 
-#//Run the zip command to package it:
+/*Run the zip command to package it:
 
 bash
 rm -f lambda_function_payload.zip   # remove any broken file
@@ -30,4 +30,4 @@ Now run:
 bash
 terraform plan
 terraform apply
-#//
+*/
