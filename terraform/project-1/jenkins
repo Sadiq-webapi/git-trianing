@@ -1,39 +1,36 @@
 pipeline {
-    agent any
-    stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'master', url: 'https://github.com/Sadiq-webapi/git-trianing.git'
-            }
+  agent any
+  environment {
+    AWS_ACCESS_KEY_ID     = credentials('aws-access-key-id')
+    AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
+    AWS_DEFAULT_REGION    = "ap-south-2"
+  }
+  stages {
+    stage('Terraform Init') {
+      steps {
+        dir('terraform/project-1') {
+          sh 'terraform init'
         }
-        stage('Terraform Init') {
-            steps {
-                dir('terraform/project-1') {
-                    sh 'terraform init'
-                }
-            }
+      }
+    }
+    stage('Terraform Plan') {
+      steps {
+        dir('terraform/project-1') {
+          sh 'terraform plan -out=tfplan'
         }
-        stage('Terraform Validate') {
-            steps {
-                dir('terraform/project-1') {
-                    sh 'terraform validate'
-                }
-            }
+      }
+    }
+    stage('Terraform Apply') {
+      steps {
+        input message: "Apply Terraform changes?"
+        dir('terraform/project-1') {
+          sh 'terraform apply -auto-approve tfplan'
         }
-        stage('Terraform Plan') {
-            steps {
-                dir('terraform/project-1') {
-                    sh 'terraform plan -out=tfplan'
-                }
-            }
-        }
-        stage('Terraform Apply') {
-            steps {
-                input message: "Apply Terraform changes?"
-                dir('terraform/project-1') {
-                    sh 'terraform apply -auto-approve tfplan'
-                }
-            }
+      }
+    }
+  }
+}
+
         }
     }
 }
