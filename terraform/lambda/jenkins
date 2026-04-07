@@ -1,11 +1,20 @@
 pipeline {
-  agent any
-  environment {
-    AWS_ACCESS_KEY_ID     = credentials(' AWS_ACCESS_KEY_ID ')
-    AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
-    AWS_DEFAULT_REGION    = "ap-south-2"
-  }
- stage('Package Lambda') {
+    agent any
+
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        AWS_DEFAULT_REGION    = "ap-south-2"
+    }
+
+    stages {
+        stage('Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Package Lambda') {
             steps {
                 dir('terraform/lambda') {
                     // Adjust path if your Lambda source is in a different folder
@@ -16,28 +25,30 @@ pipeline {
                 }
             }
         }
-  stages {
-    stage('Terraform Init') {
-      steps {
-        dir('terraform/lambda') {
-          sh 'terraform init'
+
+        stage('Terraform Init') {
+            steps {
+                dir('terraform/lambda') {
+                    sh 'terraform init'
+                }
+            }
         }
-      }
-    }
-    stage('Terraform Plan') {
-      steps {
-        dir('terraform/lambda') {
-          sh 'terraform plan -out=tfplan'
+
+        stage('Terraform Plan') {
+            steps {
+                dir('terraform/lambda') {
+                    sh 'terraform plan -out=tfplan'
+                }
+            }
         }
-      }
-    }
-    stage('Terraform Apply') {
-      steps {
-        input message: "Apply Terraform changes?"
-        dir('terraform/lambda') {
-          sh 'terraform apply -auto-approve tfplan'
+
+        stage('Terraform Apply') {
+            steps {
+                input message: "Apply Terraform changes?"
+                dir('terraform/lambda') {
+                    sh 'terraform apply -auto-approve tfplan'
+                }
+            }
         }
-      }
     }
-  }
 }
