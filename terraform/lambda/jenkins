@@ -19,6 +19,13 @@ pipeline {
         }
     }
 }
+stage('Package Lambda') {
+    steps {
+        bat '''
+        powershell -Command "Compress-Archive -Path src\\index.js -DestinationPath terraform\\lambda\\lambda_function_payload.zip -Force"
+        '''
+    }
+}
 
        stage('Terraform Plan') {
     steps {
