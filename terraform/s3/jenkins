@@ -14,18 +14,6 @@ pipeline {
             }
         }
 
-        stage('Package Lambda') {
-            steps {
-                dir('terraform/s3') {
-                    // Adjust path if your Lambda source is in a different folder
-                    sh '''
-                        rm -f lambda_function_payload.zip
-                        zip -r lambda_function_payload.zip ../lambda/*
-                    '''
-                }
-            }
-        }
-
         stage('Terraform Init') {
             steps {
                 dir('terraform/s3') {

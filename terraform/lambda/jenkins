@@ -2,34 +2,30 @@ pipeline {
     agent any
 
     environment {
-        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
-        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
-        AWS_DEFAULT_REGION    = "ap-south-2"
+       AWS_ACCESS_KEY_ID     = credentials(' AWS_ACCESS_KEY_ID ')
+    AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+    AWS_DEFAULT_REGION    = "ap-south-2"
     }
 
     stages {
-        stage('Checkout SCM') {
+        stage('Checkout') {
             steps {
-                checkout scm
+                git url: 'https://github.com/Sadiq-webapi/git-trianing.git', branch: 'master', credentialsId: 'github-token'
             }
         }
 
-        stage('Package Lambda') {
-            steps {
-                dir('terraform/lambda') {
-                    // Adjust path if your Lambda source is in a different folder
-                    sh '''
-                        rm -f lambda_function_payload.zip
-                        zip -r lambda_function_payload.zip ../lambda/*
-                    '''
-                }
-            }
-        }
+   stage('Package Lambda') {
+    steps {
+        bat '"C:\\Program Files\\7-Zip\\7z.exe" a -tzip terraform\\lambda\\lambda_function_payload.zip terraform\\lambda\\index.js'
+    }
+}
+
+
 
         stage('Terraform Init') {
             steps {
                 dir('terraform/lambda') {
-                    sh 'terraform init'
+                    bat 'terraform init'
                 }
             }
         }
@@ -37,16 +33,15 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 dir('terraform/lambda') {
-                    sh 'terraform plan -out=tfplan'
+                    bat 'terraform plan -out=tfplan'
                 }
             }
         }
 
         stage('Terraform Apply') {
             steps {
-                input message: "Apply Terraform changes?"
                 dir('terraform/lambda') {
-                    sh 'terraform apply -auto-approve tfplan'
+                    bat 'terraform apply -auto-approve tfplan'
                 }
             }
         }
