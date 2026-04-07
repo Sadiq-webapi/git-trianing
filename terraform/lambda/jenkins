@@ -14,7 +14,7 @@ pipeline {
 
        stage('Package Lambda') {
     steps {
-        bat '"C:\\Program Files\\7-Zip\\7z.exe" a -tzip terraform\\lambda\\lambda_function_payload.zip src\\index.js'
+        bat '"C:\\Program Files\\7-Zip\\7z.exe" a -tzip terraform\\lambda\\lambda_function_payload.zip lambda\\index.js'
     }
 }
 
