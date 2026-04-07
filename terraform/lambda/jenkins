@@ -2,52 +2,48 @@ pipeline {
     agent any
 
     environment {
-        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
-        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
-        AWS_DEFAULT_REGION    = "ap-south-2"
+        AWS_DEFAULT_REGION = "us-east-1"
     }
 
     stages {
-        stage('Checkout SCM') {
+        stage('Checkout') {
             steps {
-                checkout scm
+                git url: 'https://github.com/your-org/terraform-lambda-repo.git', branch: 'main'
             }
         }
 
-        stage('Package Lambda') {
+        stage('Install Terraform') {
             steps {
-                dir('terraform/lambda') {
-                    // Adjust path if your Lambda source is in a different folder
-                    sh '''
-                        rm -f lambda_function_payload.zip
-                        zip -r lambda_function_payload.zip ../lambda/*
-                    '''
-                }
+                sh '''
+                curl -fsSL https://releases.hashicorp.com/terraform/1.7.5/terraform_1.7.5_linux_amd64.zip -o terraform.zip
+                unzip terraform.zip
+                sudo mv terraform /usr/local/bin/
+                '''
             }
         }
 
         stage('Terraform Init') {
             steps {
-                dir('terraform/lambda') {
-                    sh 'terraform init'
-                }
+                sh 'terraform init'
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                dir('terraform/lambda') {
-                    sh 'terraform plan -out=tfplan'
-                }
+                sh 'terraform plan -out=tfplan'
             }
         }
+stage('Package Lambda') {
+    steps {
+        sh '''
+        zip -j lambda_function_payload.zip src/index.js
+        '''
+    }
+}
 
         stage('Terraform Apply') {
             steps {
-                input message: "Apply Terraform changes?"
-                dir('terraform/lambda') {
-                    sh 'terraform apply -auto-approve tfplan'
-                }
+                sh 'terraform apply -auto-approve tfplan'
             }
         }
     }
