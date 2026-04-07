@@ -2,49 +2,47 @@ pipeline {
     agent any
 
     environment {
-        AWS_DEFAULT_REGION = "ap-south-2"
+        AWS_DEFAULT_REGION = "us-east-1"
     }
 
-  stages {
-        stage('Checkout SCM') {
+    stages {
+        stage('Checkout') {
             steps {
-                checkout scm
+                git url: 'https://github.com/Sadiq-webapi/git-trianing.git', branch: 'master', credentialsId: 'github-token'
             }
         }
 
-       stage('Install Terraform') {
-    steps {
-        bat '''
-        curl -fsSL https://releases.hashicorp.com/terraform/1.7.5/terraform_1.7.5_windows_amd64.zip -o terraform.zip
-        powershell -Command "Expand-Archive -Path terraform.zip -DestinationPath . -Force"
-        move terraform.exe C:\\Windows\\System32\\terraform.exe
-        '''
-    }
-}
-
+        stage('Install Terraform') {
+            steps {
+                bat '''
+                curl -fsSL https://releases.hashicorp.com/terraform/1.7.5/terraform_1.7.5_windows_amd64.zip -o terraform.zip
+                powershell -Command "Expand-Archive -Path terraform.zip -DestinationPath . -Force"
+                set PATH=%PATH%;%CD%
+                '''
+            }
+        }
 
         stage('Terraform Init') {
             steps {
-                sh 'terraform init'
+                bat 'terraform init'
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                sh 'terraform plan -out=tfplan'
+                bat 'terraform plan -out=tfplan'
             }
         }
-stage('Package Lambda') {
-    steps {
-        sh '''
-        zip -j lambda_function_payload.zip src/index.js
-        '''
-    }
-}
+
+        stage('Package Lambda') {
+            steps {
+                bat 'powershell -Command "Compress-Archive -Path src\\index.js -DestinationPath lambda_function_payload.zip -Force"'
+            }
+        }
 
         stage('Terraform Apply') {
             steps {
-                sh 'terraform apply -auto-approve tfplan'
+                bat 'terraform apply -auto-approve tfplan'
             }
         }
     }
