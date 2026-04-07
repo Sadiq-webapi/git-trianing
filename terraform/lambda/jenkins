@@ -5,10 +5,10 @@ pipeline {
         AWS_DEFAULT_REGION = "ap-south-2"
     }
 
-    stages {
-        stage('Checkout') {
+  stages {
+        stage('Checkout SCM') {
             steps {
-                git url: 'https://github.com/your-org/terraform-lambda-repo.git', branch: 'main'
+                checkout scm
             }
         }
 
