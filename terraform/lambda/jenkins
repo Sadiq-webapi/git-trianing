@@ -8,14 +8,14 @@ pipeline {
   stages {
     stage('Terraform Init') {
       steps {
-        dir('terraform/project-1') {
+        dir('terraform/lambda') {
           sh 'terraform init'
         }
       }
     }
     stage('Terraform Plan') {
       steps {
-        dir('terraform/project-1') {
+        dir('terraform/lambda') {
           sh 'terraform plan -out=tfplan'
         }
       }
@@ -23,7 +23,7 @@ pipeline {
     stage('Terraform Apply') {
       steps {
         input message: "Apply Terraform changes?"
-        dir('terraform/project-1') {
+        dir('terraform/lambda') {
           sh 'terraform apply -auto-approve tfplan'
         }
       }
