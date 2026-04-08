@@ -5,11 +5,12 @@ pipeline {
         AWS_DEFAULT_REGION = "ap-south-2"
     }
 
+   pipeline {
+    agent any
     stages {
         stage('Checkout') {
             steps {
                 script {
-                    // Pick Git tool based on agent OS
                     def gitTool = isUnix() ? 'LinuxGit' : 'WindowsGit'
                     checkout([$class: 'GitSCM',
                               branches: [[name: '*/main']],
@@ -19,6 +20,9 @@ pipeline {
                 }
             }
         }
+    }
+}
+
 
         stage('Terraform Init/Plan') {
             steps {
