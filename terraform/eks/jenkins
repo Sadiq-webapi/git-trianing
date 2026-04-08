@@ -12,7 +12,7 @@ pipeline {
                     // Pick Git tool based on agent OS
                     def gitTool = isUnix() ? 'LinuxGit' : 'WindowsGit'
                     checkout([$class: 'GitSCM',
-                              branches: [[name: '*/main']],
+                              branches: [[name: '*/master']],
                               userRemoteConfigs: [[url: 'https://github.com/Sadiq-webapi/git-trianing.git',
                                                    credentialsId: 'github-token']],
                               gitTool: gitTool])
