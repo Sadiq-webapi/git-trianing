@@ -1,46 +1,29 @@
 pipeline {
-    agent {
-        label 'linux'
-    }
+    agent any
 
     environment {
         AWS_DEFAULT_REGION = "ap-south-2"
-        TF_IN_AUTOMATION = "true"
     }
 
     stages {
-
-        stage('Verify Environment') {
-            steps {
-                sh '''
-                    echo "Running on Linux node"
-                    uname -a
-                    which git
-                    git --version
-                    which terraform
-                    terraform version
-                '''
-            }
-        }
-
         stage('Checkout') {
             steps {
-                git branch: 'master',
-                    url: 'https://github.com/Sadiq-webapi/git-trianing.git',
+                git url: 'https://github.com/Sadiq-webapi/git-trianing.git',
+                    branch: 'master',
                     credentialsId: 'github-token'
             }
         }
 
-        stage('Terraform Init & Plan') {
+        stage('Terraform Init/Plan') {
             steps {
                 withCredentials([
                     string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
                     string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
                 ]) {
                     dir('terraform/eks') {
-                        sh '''
-                            terraform init
-                            terraform plan -out=tfplan
+                        bat '''
+                        terraform init
+                        terraform plan -out=tfplan
                         '''
                     }
                 }
@@ -54,9 +37,7 @@ pipeline {
                     string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
                 ]) {
                     dir('terraform/eks') {
-                        sh '''
-                            terraform apply -auto-approve tfplan
-                        '''
+                        bat 'terraform apply -auto-approve tfplan'
                     }
                 }
             }
