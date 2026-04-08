@@ -11,7 +11,7 @@ pipeline {
             steps {
                 echo "Running on node: ${env.NODE_NAME} (Linux)"
                 checkout([$class: 'GitSCM',
-                          branches: [[name: '*/main']],
+                          branches: [[name: '*/master']],
                           userRemoteConfigs: [[url: 'https://github.com/Sadiq-webapi/git-trianing.git',
                                                credentialsId: 'github-token']],
                           gitTool: 'LinuxGit'])
@@ -23,7 +23,7 @@ pipeline {
             steps {
                 echo "Running on node: ${env.NODE_NAME} (Windows)"
                 checkout([$class: 'GitSCM',
-                          branches: [[name: '*/main']],
+                          branches: [[name: '*/master']],
                           userRemoteConfigs: [[url: 'https://github.com/Sadiq-webapi/git-trianing.git',
                                                credentialsId: 'github-token']],
                           gitTool: 'WindowsGit'])
