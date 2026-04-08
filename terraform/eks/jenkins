@@ -1,43 +1,47 @@
 pipeline {
-    agent any
-
-    tools {
-        git 'Git'   // ✅ ADD HERE (top-level, not inside stages)
+    agent {
+        label 'linux'
     }
 
     environment {
         AWS_DEFAULT_REGION = "ap-south-2"
+        TF_IN_AUTOMATION = "true"
     }
 
     stages {
+
+        stage('Verify Environment') {
+            steps {
+                sh '''
+                    echo "Running on Linux node"
+                    uname -a
+                    which git
+                    git --version
+                    which terraform
+                    terraform version
+                '''
+            }
+        }
+
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/Sadiq-webapi/git-trianing.git',
-                    branch: 'master',
+                git branch: 'master',
+                    url: 'https://github.com/Sadiq-webapi/git-trianing.git',
                     credentialsId: 'github-token'
             }
         }
 
-        stage('Terraform Init/Plan') {
+        stage('Terraform Init & Plan') {
             steps {
                 withCredentials([
                     string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
                     string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
                 ]) {
                     dir('terraform/eks') {
-                        script {
-                            if (isUnix()) {
-                                sh '''
-                                    terraform init
-                                    terraform plan -out=tfplan
-                                '''
-                            } else {
-                                bat '''
-                                    terraform init
-                                    terraform plan -out=tfplan
-                                '''
-                            }
-                        }
+                        sh '''
+                            terraform init
+                            terraform plan -out=tfplan
+                        '''
                     }
                 }
             }
@@ -50,13 +54,9 @@ pipeline {
                     string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
                 ]) {
                     dir('terraform/eks') {
-                        script {
-                            if (isUnix()) {
-                                sh 'terraform apply -auto-approve tfplan'
-                            } else {
-                                bat 'terraform apply -auto-approve tfplan'
-                            }
-                        }
+                        sh '''
+                            terraform apply -auto-approve tfplan
+                        '''
                     }
                 }
             }
