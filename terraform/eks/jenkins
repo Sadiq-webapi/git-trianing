@@ -5,15 +5,29 @@ pipeline {
         AWS_DEFAULT_REGION = "ap-south-2"
     }
 
+   pipeline {
+    agent { label 'linux' }
+    tools { git 'LinuxGit' }
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/Sadiq-webapi/git-trianing.git',
-                    branch: 'master',
-                    credentialsId: 'github-token'
+                checkout scm
             }
         }
+    }
+}
 
+pipeline {
+    agent { label 'windows' }
+    tools { git 'WindowsGit' }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+    }
+}
         stage('Terraform Init/Plan') {
             steps {
                 withCredentials([
