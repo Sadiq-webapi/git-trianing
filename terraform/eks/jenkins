@@ -5,20 +5,34 @@ pipeline {
         AWS_DEFAULT_REGION = "ap-south-2"
     }
 
+   pipeline {
+    agent none
+
     stages {
-        stage('Checkout') {
+        stage('Checkout on Linux') {
+            agent { label 'linux' }
             steps {
-                script {
-                    // Select Git tool based on agent OS
-                    def gitTool = isUnix() ? 'LinuxGit' : 'WindowsGit'
-                    checkout([$class: 'GitSCM',
-                              branches: [[name: '*/main']],
-                              userRemoteConfigs: [[url: 'https://github.com/Sadiq-webapi/git-trianing.git',
-                                                   credentialsId: 'github-token']],
-                              gitTool: gitTool])
-                }
+                checkout([$class: 'GitSCM',
+                          branches: [[name: '*/main']],
+                          userRemoteConfigs: [[url: 'https://github.com/Sadiq-webapi/git-trianing.git',
+                                               credentialsId: 'github-token']],
+                          gitTool: 'LinuxGit'])
             }
         }
+
+        stage('Checkout on Windows') {
+            agent { label 'windows' }
+            steps {
+                checkout([$class: 'GitSCM',
+                          branches: [[name: '*/main']],
+                          userRemoteConfigs: [[url: 'https://github.com/Sadiq-webapi/git-trianing.git',
+                                               credentialsId: 'github-token']],
+                          gitTool: 'WindowsGit'])
+            }
+        }
+    }
+}
+
 
         stage('Terraform Init/Plan') {
             steps {
