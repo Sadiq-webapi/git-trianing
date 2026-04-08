@@ -9,10 +9,10 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    // Pick Git tool based on agent OS
+                    // Select Git tool based on agent OS
                     def gitTool = isUnix() ? 'LinuxGit' : 'WindowsGit'
                     checkout([$class: 'GitSCM',
-                              branches: [[name: '*/master']],
+                              branches: [[name: '*/main']],
                               userRemoteConfigs: [[url: 'https://github.com/Sadiq-webapi/git-trianing.git',
                                                    credentialsId: 'github-token']],
                               gitTool: gitTool])
