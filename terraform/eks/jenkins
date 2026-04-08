@@ -14,7 +14,7 @@ pipeline {
                 checkout scm
             }
         }
-    }
+}
 }
 
 pipeline {
