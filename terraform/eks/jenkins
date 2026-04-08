@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        git 'Git'   // ✅ ADD HERE (top-level, not inside stages)
+    }
+
     environment {
         AWS_DEFAULT_REGION = "ap-south-2"
     }
