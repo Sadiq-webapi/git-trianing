@@ -5,29 +5,21 @@ pipeline {
         AWS_DEFAULT_REGION = "ap-south-2"
     }
 
-   pipeline {
-    agent { label 'linux' }
-    tools { git 'LinuxGit' }
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                script {
+                    // Pick Git tool based on agent OS
+                    def gitTool = isUnix() ? 'LinuxGit' : 'WindowsGit'
+                    checkout([$class: 'GitSCM',
+                              branches: [[name: '*/main']],
+                              userRemoteConfigs: [[url: 'https://github.com/Sadiq-webapi/git-trianing.git',
+                                                   credentialsId: 'github-token']],
+                              gitTool: gitTool])
+                }
             }
         }
-}
-}
 
-pipeline {
-    agent { label 'windows' }
-    tools { git 'WindowsGit' }
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-    }
-}
         stage('Terraform Init/Plan') {
             steps {
                 withCredentials([
@@ -35,10 +27,19 @@ pipeline {
                     string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
                 ]) {
                     dir('terraform/eks') {
-                        bat '''
-                        terraform init
-                        terraform plan -out=tfplan
-                        '''
+                        script {
+                            if (isUnix()) {
+                                sh '''
+                                    terraform init
+                                    terraform plan -out=tfplan
+                                '''
+                            } else {
+                                bat '''
+                                    terraform init
+                                    terraform plan -out=tfplan
+                                '''
+                            }
+                        }
                     }
                 }
             }
@@ -51,7 +52,13 @@ pipeline {
                     string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
                 ]) {
                     dir('terraform/eks') {
-                        bat 'terraform apply -auto-approve tfplan'
+                        script {
+                            if (isUnix()) {
+                                sh 'terraform apply -auto-approve tfplan'
+                            } else {
+                                bat 'terraform apply -auto-approve tfplan'
+                            }
+                        }
                     }
                 }
             }
