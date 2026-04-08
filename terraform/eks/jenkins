@@ -1,63 +1,58 @@
 pipeline {
-    agent none
+    agent any
 
     environment {
         AWS_DEFAULT_REGION = "ap-south-2"
     }
 
     stages {
-        stage('Checkout on Linux') {
-            agent { label 'linux' }
+        stage('Checkout') {
             steps {
-                echo "Running on node: ${env.NODE_NAME} (Linux)"
-                checkout([$class: 'GitSCM',
-                          branches: [[name: '*/master']],
-                          userRemoteConfigs: [[url: 'https://github.com/Sadiq-webapi/git-trianing.git',
-                                               credentialsId: 'github-token']],
-                          gitTool: 'LinuxGit'])
-            }
-        }
-
-        stage('Checkout on Windows') {
-            agent { label 'windows' }
-            steps {
-                echo "Running on node: ${env.NODE_NAME} (Windows)"
-                checkout([$class: 'GitSCM',
-                          branches: [[name: '*/master']],
-                          userRemoteConfigs: [[url: 'https://github.com/Sadiq-webapi/git-trianing.git',
-                                               credentialsId: 'github-token']],
-                          gitTool: 'WindowsGit'])
+                git url: 'https://github.com/Sadiq-webapi/git-trianing.git',
+                    branch: 'master',
+                    credentialsId: 'github-token'
             }
         }
 
         stage('Terraform Init/Plan') {
-            agent { label 'linux' } // Terraform runs best on Linux
             steps {
-                echo "Running on node: ${env.NODE_NAME} (Linux)"
                 withCredentials([
                     string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
                     string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
                 ]) {
                     dir('terraform/eks') {
-                        sh '''
-                            terraform init
-                            terraform plan -out=tfplan
-                        '''
+                        script {
+                            if (isUnix()) {
+                                sh '''
+                                    terraform init
+                                    terraform plan -out=tfplan
+                                '''
+                            } else {
+                                bat '''
+                                    terraform init
+                                    terraform plan -out=tfplan
+                                '''
+                            }
+                        }
                     }
                 }
             }
         }
 
         stage('Terraform Apply') {
-            agent { label 'linux' }
             steps {
-                echo "Running on node: ${env.NODE_NAME} (Linux)"
                 withCredentials([
                     string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
                     string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
                 ]) {
                     dir('terraform/eks') {
-                        sh 'terraform apply -auto-approve tfplan'
+                        script {
+                            if (isUnix()) {
+                                sh 'terraform apply -auto-approve tfplan'
+                            } else {
+                                bat 'terraform apply -auto-approve tfplan'
+                            }
+                        }
                     }
                 }
             }
