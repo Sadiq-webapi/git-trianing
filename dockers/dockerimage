@@ -1,10 +1,9 @@
 pipeline {
     agent any
-    
     environment {
-        // Change 'your-username' to your actual Docker Hub username
-        DOCKER_IMAGE = "661268174324.dkr.ecr.ap-south-2.amazonaws.com/my-web-app"
-        DOCKER_TAG = "latest"
+        // FIXED: No slash at the end of the registry URL
+        REGISTRY = "661268174324.dkr.ecr.ap-south-2.amazonaws.com"
+        REPO_NAME = "my-web-app"
     }
 
     stages {
