@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+    
+    environment {
+        // Change 'your-username' to your actual Docker Hub username
+        DOCKER_IMAGE = "sadiq/nginx-app"
+        DOCKER_TAG = "latest"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Image') {
+            steps {
+                script {
+                    // Builds the image: your-username/my-web-app:1
+                   app = docker.build("sadiq/nginx-app")
+                }
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                script {
+                    // Authenticates and pushes the image
+                    docker.withRegistry('', 'docker-hub-creds') {
+                        app.push()
+                        app.push("latest") // Optional: also push the 'latest' tag
+                    }
+                }
+            }
+        }
+    }
+}
