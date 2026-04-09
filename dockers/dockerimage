@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         // FIXED: No slash at the end of the registry URL
-        REGISTRY = "661268174324.dkr.ecr.ap-south-2.amazonaws.com"
+        REGISTRY = "docker.io"
         REPO_NAME = "my-web-app"
     }
 
@@ -23,21 +23,14 @@ pipeline {
 
 stage('Push Image') {
     steps {
-        // This block injects your keys into the session
-        withCredentials([usernamePassword(credentialsId: 'aws-ecr-creds', 
-                         usernameVariable: 'AWS_ACCESS_KEY_ID', 
-                         passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+        // Use your Docker Hub credentials ID here
+        withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', 
+                         usernameVariable: 'USER', 
+                         passwordVariable: 'PASS')]) {
             bat """
-            @echo off
-            :: Set the region for this session
-            set AWS_DEFAULT_REGION=ap-south-2
-            
-            :: 1. Log in to ECR
-            aws ecr get-login-password --region ap-south-2 | docker login --username AWS --password-stdin 661268174324.dkr.ecr.ap-south-2.amazonaws.com
-            
-            :: 2. Build and Push
-            docker build -t 661268174324.dkr.ecr.ap-south-2.amazonaws.com/my-web-app:%BUILD_NUMBER% .
-            docker push 661268174324.dkr.ecr.ap-south-2.amazonaws.com/my-web-app:%BUILD_NUMBER%
+            docker login -u %USER% -p %PASS%
+            docker build -t %REPO_NAME%:%BUILD_NUMBER% .
+            docker push %REPO_NAME%:%BUILD_NUMBER%
             """
         }
     }
