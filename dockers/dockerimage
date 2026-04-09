@@ -1,0 +1,54 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_USER = "mohamedsadiq9741"
+        REPO_NAME = "myapp"
+        IMAGE_NAME = "${DOCKER_USER}/${REPO_NAME}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build & Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', 
+                                 usernameVariable: 'U', passwordVariable: 'P')]) {
+                    bat """
+                    @echo off
+                    echo %P% | docker login -u %U% --password-stdin
+                    docker build -t %IMAGE_NAME%:%BUILD_NUMBER% .
+                    docker tag %IMAGE_NAME%:%BUILD_NUMBER% %IMAGE_NAME%:latest
+                    docker push %IMAGE_NAME%:%BUILD_NUMBER%
+                    docker push %IMAGE_NAME%:latest
+                    """
+                }
+            }
+        }
+
+        stage('Deploy & Load Balancer') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'aws-creds', 
+                                 usernameVariable: 'AWS_ACCESS_KEY_ID', 
+                                 passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    bat """
+                    @echo off
+                    :: Ensure Jenkins is connected to your EKS cluster
+                    aws eks update-kubeconfig --region ap-south-2 --name your-cluster-name
+                    
+                    :: Apply the Deployment and Service (Load Balancer)
+                    kubectl apply -f deployment.yaml
+                    kubectl apply -f service.yaml
+                    
+                    :: Update the deployment to use the new image version
+                    kubectl set image deployment/myapp-deployment myapp-container=%IMAGE_NAME%:%BUILD_NUMBER%
+                    """
+                }
+            }
+        }
+    }
+}
