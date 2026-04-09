@@ -30,22 +30,23 @@ pipeline {
             }
         }
 
-        stage('Deploy & Load Balancer') {
+      stage('Deploy & Load Balancer') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'aws-ecr-creds', 
+                // Ensure 'aws-creds' matches your Jenkins Credentials ID
+                withCredentials([usernamePassword(credentialsId: 'aws-creds', 
                                  usernameVariable: 'AWS_ACCESS_KEY_ID', 
                                  passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                     bat """
                     @echo off
-                    :: Ensure Jenkins is connected to your EKS cluster
-                    aws eks update-kubeconfig --region ap-south-2 --name your-cluster-name
+                    :: 1. Authenticate with your EKS cluster
+                    aws eks update-kubeconfig --region ap-south-2 --name web-app
                     
-                    :: Apply the Deployment and Service (Load Balancer)
+                    :: 2. Apply the Deployment and the Load Balancer Service
                     kubectl apply -f deployment.yaml
                     kubectl apply -f service.yaml
                     
-                    :: Update the deployment to use the new image version
-                    kubectl set image deployment/myapp-deployment myapp-container=%IMAGE_NAME%:%BUILD_NUMBER%
+                    :: 3. Update the deployment to use the specific build version
+                    kubectl set image deployment/myapp-deployment myapp-container=mohamedsadiq9741/myapp:%BUILD_NUMBER%
                     """
                 }
             }
