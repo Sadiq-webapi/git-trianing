@@ -8,31 +8,28 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Build Image') {
-            steps {
-                script {
-                    // Builds the image: your-username/my-web-app:1
-                   app = docker.build("sadiq/nginx-app")
-                }
-            }
-        }
-
-        stage('Push Image') {
-            steps {
-                script {
-                    // Authenticates and pushes the image
-                    docker.withRegistry('', 'docker-hub-creds') {
-                        app.push()
-                        app.push("latest") // Optional: also push the 'latest' tag
-                    }
-                }
-            }
-        }
+       stage('Build Image') {
+    steps {
+        // Use 'bat' for Windows, 'sh' for Linux
+        bat "docker build -t 661268174324.dkr.ecr.ap-south-2.amazonaws.com/my-web-app:%BUILD_NUMBER% ."
     }
+}
+
+stage('Push Image') {
+    steps {
+        // Authenticate and push using standard AWS CLI and Docker commands
+        bat """
+        aws ecr get-login-password --region ap-south-2 | docker login --username AWS --password-stdin 661268174324.dkr.ecr.ap-south-2.amazonaws.com
+        docker push 661268174324.dkr.ecr.ap-south-2.amazonaws.com/my-web-app:%BUILD_NUMBER%
+        """
+    }
+}
+}
 }
