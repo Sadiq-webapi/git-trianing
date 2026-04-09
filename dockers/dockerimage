@@ -3,7 +3,7 @@ pipeline {
     
     environment {
         // Change 'your-username' to your actual Docker Hub username
-        DOCKER_IMAGE = "sadiq/nginx-app"
+        DOCKER_IMAGE = ""661268174324.dkr.ecr.ap-south-2.amazonaws.com/my-web-app""
         DOCKER_TAG = "latest"
     }
 
