@@ -21,16 +21,24 @@ pipeline {
     }
 }
 
-stage('Push Image') {
+stage('Push to Docker Hub') {
     steps {
-        // Use your Docker Hub credentials ID here
+        // ID must match exactly what you saved in Manage Jenkins > Credentials
         withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', 
-                         usernameVariable: 'USER', 
-                         passwordVariable: 'PASS')]) {
+                         usernameVariable: 'DOCKER_USER', 
+                         passwordVariable: 'DOCKER_PASS')]) {
             bat """
-            docker login -u %USER% -p %PASS%
-            docker build -t %REPO_NAME%:%BUILD_NUMBER% .
-            docker push %REPO_NAME%:%BUILD_NUMBER%
+            @echo off
+            :: Use echo to pipe the password into docker login
+            echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+            
+            :: Build with the full name from your screenshot
+            docker build -t mohamedsadiq9741/myapp:%BUILD_NUMBER% .
+            docker tag mohamedsadiq9741/myapp:%BUILD_NUMBER% mohamedsadiq9741/myapp:latest
+            
+            :: Push the image
+            docker push mohamedsadiq9741/myapp:%BUILD_NUMBER%
+            docker push mohamedsadiq9741/myapp:latest
             """
         }
     }
