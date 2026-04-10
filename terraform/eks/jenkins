@@ -43,35 +43,32 @@ pipeline {
             }
         }
 stage('Deploy to EKS') {
-
     steps {
+        // This MUST match the ID you created in the Jenkins UI
+        withCredentials([[
+            $class: 'AmazonWebServicesCredentialsBinding', 
+            credentialsId: 'sadiq-aws', 
+            accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        ]]) {
+            script {
+                // Since you are on Windows, use 'bat' for commands
+                bat """
+                    @echo off
+                    echo "Checking AWS Identity..."
+                    aws sts get-caller-identity
 
-        script {
+                    echo "Updating Kubeconfig for EKS..."
+                    aws eks update-kubeconfig --region ap-south-2 --name your-cluster-name
 
-            // Use 'bat' instead of 'sh' on Windows agents
-
-            bat """
-
-                @echo off
-
-                REM 1. Update EKS config
-
-                aws eks update-kubeconfig --region ap-south-2 --name practice-cluster
-
-                
-
-                REM 2. Use the correct path (change 'eks' to whatever folder 'dir /s' found)
-
-                kubectl apply -f eks/deployment.yaml
-
-                kubectl apply -f eks/service.yaml
-
-            """
-
+                    echo "Deploying to Kubernetes..."
+                    # Use the correct path found by your 'dir' command earlier
+                    kubectl apply -f deployment.yaml
+                    kubectl apply -f service.yaml
+                """
+            }
         }
-
     }
-
+}    
 }
-    }
 }
