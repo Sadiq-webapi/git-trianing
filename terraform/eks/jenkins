@@ -47,7 +47,7 @@ stage('Deploy to EKS') {
         // This MUST match the ID you created in the Jenkins UI
         withCredentials([[
             $class: 'AmazonWebServicesCredentialsBinding', 
-            credentialsId: 'sadiq-aws', 
+            credentialsId: 'aws-sadiq-creds', 
             accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
             secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
         ]]) {
