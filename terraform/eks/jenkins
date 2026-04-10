@@ -42,5 +42,36 @@ pipeline {
                 }
             }
         }
+stage('Deploy to EKS') {
+
+    steps {
+
+        script {
+
+            // Use 'bat' instead of 'sh' on Windows agents
+
+            bat """
+
+                @echo off
+
+                REM 1. Update EKS config
+
+                aws eks update-kubeconfig --region ap-south-2 --name practice-cluster
+
+                
+
+                REM 2. Use the correct path (change 'eks' to whatever folder 'dir /s' found)
+
+                kubectl apply -f eks/deployment.yaml
+
+                kubectl apply -f eks/service.yaml
+
+            """
+
+        }
+
+    }
+
+}
     }
 }
