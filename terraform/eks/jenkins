@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         AWS_DEFAULT_REGION = "ap-south-2"
-        ECR_REPO = "661268174324.dkr.ecr.ap-south-2.amazonaws.com/git-training"
         CLUSTER_NAME = "clusters"
     }
 
@@ -16,79 +15,44 @@ pipeline {
             }
         }
 
-        stage('Terraform Init/Plan') {
+        stage('Build & Push to Docker Hub') {
             steps {
-                // Use the same aws-ecr-creds for Terraform to keep it consistent
-                withCredentials([[
-                    $class: 'AmazonWebServicesCredentialsBinding', 
-                    credentialsId: 'aws-ecr-creds', 
-                    accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
-                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                ]]) {
-                    dir('terraform/eks') {
-                        sh '''
-                        terraform init
-                        terraform plan -out=tfplan
-                        '''
-                    }
-                }
-            }
-        }
-
-        stage('Terraform Apply') {
-            steps {
-                withCredentials([[
-                    $class: 'AmazonWebServicesCredentialsBinding', 
-                    credentialsId: 'aws-ecr-creds', 
-                    accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
-                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                ]]) {
-                    dir('terraform/eks') {
-                        sh 'terraform apply -auto-approve tfplan'
-                    }
-                }
-            }
-        }
-
-        stage('Build & Push to ECR') {
-            steps {
-                withCredentials([[
-                    $class: 'AmazonWebServicesCredentialsBinding', 
-                    credentialsId: 'aws-ecr-creds', 
-                    accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
-                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                ]]) {
-                    sh """
-                    # Authenticate Docker to ECR
-                    aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin 661268174324.dkr.ecr.ap-south-2.amazonaws.com
-                    
-                    # Build, Tag, and Push
-                    docker build -t git-training .
-                    docker tag git-training:latest ${ECR_REPO}:latest
-                    docker push ${ECR_REPO}:latest
+                // Docker Hub uses Username/Password type
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    bat """
+                    docker login -u %USER% -p %PASS%
+                    docker build -t mohamedsadiq9741/myapp:%BUILD_NUMBER% .
+                    docker tag mohamedsadiq9741/myapp:%BUILD_NUMBER% mohamedsadiq9741/myapp:latest
+                    docker push mohamedsadiq9741/myapp:%BUILD_NUMBER%
+                    docker push mohamedsadiq9741/myapp:latest
                     """
                 }
             }
         }
 
-        stage('Deploy to EKS') {
+        stage('Deploy & Load Balancer') {
             steps {
+                // CRITICAL: Use the AWS Credentials binding here to avoid the error
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding', 
                     credentialsId: 'aws-ecr-creds', 
                     accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
                     secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
                 ]]) {
-                    sh """
-                    # Update kubeconfig to point to your cluster
-                    aws eks update-kubeconfig --region ${AWS_DEFAULT_REGION} --name ${CLUSTER_NAME}
+                    bat """
+                    @echo off
+                    set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
+                    set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
                     
-                    # Apply Kubernetes manifests
+                    # Update kubeconfig for Windows
+                    aws eks update-kubeconfig --region %AWS_DEFAULT_REGION% --name %CLUSTER_NAME%
+                    
+                    # Deploy to EKS
                     kubectl apply -f deployment.yaml
                     kubectl apply -f service.yaml
                     
-                    # Force update if image tag is 'latest'
-                    kubectl rollout restart deployment/git-training
+                    # Force a restart to pull the new image
+                    kubectl rollout restart deployment/myapp
                     """
                 }
             }
