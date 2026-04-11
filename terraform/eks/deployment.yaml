@@ -19,6 +19,7 @@ spec:
         # --- ACTION REQUIRED HERE ---
         # Replace the URL below with your actual ECR repository image URI.
         image: mohamedsadiq9741/myapp
+        imagePullPolicy: Always
         ports:
         - containerPort: 80 # The port your application inside the container listens on
         resources:
