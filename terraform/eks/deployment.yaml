@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: git-training-app
+  labels:
+    app: git-training
+spec:
+  replicas: 2 # Runs two copies of your app for high availability
+  selector:
+    matchLabels:
+      app: git-training
+  template:
+    metadata:
+      labels:
+        app: git-training
+    spec:
+      containers:
+      - name: app-container
+        # --- ACTION REQUIRED HERE ---
+        # Replace the URL below with your actual ECR repository image URI.
+        image: <YOUR_AWS_ACCOUNT_ID>.dkr.ecr.ap-south-2.amazonaws.com/git-training:latest
+        ports:
+        - containerPort: 80 # The port your application inside the container listens on
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "250m"
+            memory: "256Mi"

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: git-training-service
+spec:
+  # This type automatically creates an AWS Classic Load Balancer (ELB) in EKS
+  type: LoadBalancer 
+  selector:
+    # --- IMPORTANT ---
+    # This must perfectly match the 'matchLabels' in deployment.yaml
+    app: git-training
+  ports:
+    - protocol: TCP
+      port: 80       # The port the public Load Balancer will listen on (e.g., http://<LB-DNS>:80)
+      targetPort: 80 # The port the Service sends traffic to on the container
