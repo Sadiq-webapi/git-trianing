@@ -12,4 +12,4 @@ spec:
   ports:
     - protocol: TCP
       port: 80       # The port the public Load Balancer will listen on (e.g., http://<LB-DNS>:80)
-      targetPort: 80 # The port the Service sends traffic to on the container
+      targetPort: 8080 # The port the Service sends traffic to on the container
