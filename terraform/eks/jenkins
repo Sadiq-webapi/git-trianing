@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         AWS_DEFAULT_REGION = "ap-south-2"
+        // It's better to define these here globally if used in multiple stages
     }
 
     stages {
@@ -16,12 +17,14 @@ pipeline {
 
         stage('Terraform Init/Plan') {
             steps {
+                // Using standard string credentials as you did in your original script
                 withCredentials([
                     string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
                     string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
                 ]) {
                     dir('terraform/eks') {
-                        bat '''
+                        // Changed 'bat' to 'sh' for Linux
+                        sh '''
                         terraform init
                         terraform plan -out=tfplan
                         '''
@@ -37,7 +40,31 @@ pipeline {
                     string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
                 ]) {
                     dir('terraform/eks') {
-                        bat 'terraform apply -auto-approve tfplan'
+                        sh 'terraform apply -auto-approve tfplan'
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to EKS') {
+            steps {
+                withCredentials([
+                    string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+                    string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
+                ]) {
+                    script {
+                        sh """
+                        echo "Checking AWS Identity..."
+                        aws sts get-caller-identity
+
+                        echo "Updating Kubeconfig for EKS..."
+                        aws eks update-kubeconfig --region ap-south-2 --name clusters
+
+                        echo "Deploying to Kubernetes..."
+                        # Ensure you are in the directory where yaml files exist
+                        kubectl apply -f deployment.yaml
+                        kubectl apply -f service.yaml
+                        """
                     }
                 }
             }
