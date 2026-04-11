@@ -34,26 +34,29 @@ pipeline {
             }
         }
 
-        stage('Deploy to EKS & Load Balancer') {
+      stage('Deploy to EKS & Load Balancer') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'aws-ecr-creds', 
                                                  usernameVariable: 'AWS_ACCESS_KEY_ID', 
                                                  passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    bat """
-                    @echo off
-                    set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
-                    set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
+                    // This is the fix: Enter the folder shown in your image
+                    dir('terraform/eks') {
+                        bat """
+                        @echo off
+                        set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
+                        set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
 
-                    :: Authenticate with the EKS cluster
-                    aws eks update-kubeconfig --region %AWS_DEFAULT_REGION% --name %CLUSTER_NAME%
+                        :: Authenticate with the EKS cluster
+                        aws eks update-kubeconfig --region %AWS_DEFAULT_REGION% --name %CLUSTER_NAME%
 
-                    :: Deploy your application and the Load Balancer service
-                    kubectl apply -f deployment.yaml
-                    kubectl apply -f service.yaml
+                        :: Apply the files from inside this folder
+                        kubectl apply -f deployment.yaml
+                        kubectl apply -f service.yaml
 
-                    :: Force Kubernetes to pull the new 'latest' image
-                    kubectl rollout restart deployment/git-training
-                    """
+                        :: Force the update
+                        kubectl rollout restart deployment/git-training
+                        """
+                    }
                 }
             }
         }
