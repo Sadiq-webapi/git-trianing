@@ -1,6 +1,5 @@
 pipeline {
     agent any
-
     environment {
         AWS_DEFAULT_REGION = "ap-south-2"
         CLUSTER_NAME = "clusters"
@@ -9,18 +8,18 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/Sadiq-webapi/git-trianing.git',
-                    branch: 'master',
-                    credentialsId: 'github-token'
+                checkout scm
             }
         }
 
-        stage('Build & Push to Docker Hub') {
+        stage('Push to Docker Hub') {
             steps {
-                // Docker Hub uses Username/Password type
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', 
+                                                 usernameVariable: 'DOCKER_USER', 
+                                                 passwordVariable: 'DOCKER_PASS')]) {
                     bat """
-                    docker login -u %USER% -p %PASS%
+                    @echo off
+                    echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
                     docker build -t mohamedsadiq9741/myapp:%BUILD_NUMBER% .
                     docker tag mohamedsadiq9741/myapp:%BUILD_NUMBER% mohamedsadiq9741/myapp:latest
                     docker push mohamedsadiq9741/myapp:%BUILD_NUMBER%
@@ -30,9 +29,9 @@ pipeline {
             }
         }
 
-        stage('Deploy & Load Balancer') {
+        stage('Deploy to EKS & Load Balancer') {
             steps {
-                // CRITICAL: Use the AWS Credentials binding here to avoid the error
+                // Use AWS Credentials Binding for the AWS Credentials type
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding', 
                     credentialsId: 'aws-ecr-creds', 
@@ -41,18 +40,19 @@ pipeline {
                 ]]) {
                     bat """
                     @echo off
+                    :: Set temporary environment variables for the AWS CLI
                     set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
                     set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
-                    
-                    # Update kubeconfig for Windows
+
+                    :: Sync Kubeconfig
                     aws eks update-kubeconfig --region %AWS_DEFAULT_REGION% --name %CLUSTER_NAME%
-                    
-                    # Deploy to EKS
+
+                    :: Apply Deployment and Load Balancer Service
                     kubectl apply -f deployment.yaml
                     kubectl apply -f service.yaml
-                    
-                    # Force a restart to pull the new image
-                    kubectl rollout restart deployment/myapp
+
+                    :: Force restart to pull the 'latest' image
+                    kubectl rollout restart deployment/git-training
                     """
                 }
             }
