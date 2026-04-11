@@ -46,9 +46,9 @@ pipeline {
             }
         }
 
-      stage('Build & Push to ECR') {
+     stage('Build & Push to ECR') {
     steps {
-        // Use the AWS Credentials binding for the 'AWS Credentials' type
+        // Use the AWS-specific binding
         withCredentials([[
             $class: 'AmazonWebServicesCredentialsBinding', 
             credentialsId: 'aws-ecr-creds', 
@@ -56,10 +56,9 @@ pipeline {
             secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
         ]]) {
             sh """
-            # login to AWS ECR
+            # Now the variables match the AWS CLI expectations
             aws ecr get-login-password --region ap-south-2 | docker login --username AWS --password-stdin 661268174324.dkr.ecr.ap-south-2.amazonaws.com
             
-            # build and push
             docker build -t git-training .
             docker tag git-training:latest 661268174324.dkr.ecr.ap-south-2.amazonaws.com/git-training:latest
             docker push 661268174324.dkr.ecr.ap-south-2.amazonaws.com/git-training:latest
