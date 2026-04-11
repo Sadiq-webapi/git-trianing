@@ -29,18 +29,15 @@ pipeline {
             }
         }
 
-        stage('Deploy to EKS & Load Balancer') {
+      stage('Deploy to EKS & Load Balancer') {
             steps {
-                // Use AWS Credentials Binding for the AWS Credentials type
-                withCredentials([[
-                    $class: 'AmazonWebServicesCredentialsBinding', 
-                    credentialsId: 'aws-ecr-creds', 
-                    accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
-                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                ]]) {
+                // Use usernamePassword because your 'aws-ecr-creds' has the phone icon
+                withCredentials([usernamePassword(credentialsId: 'aws-ecr-creds', 
+                                                 usernameVariable: 'AWS_ACCESS_KEY_ID', 
+                                                 passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                     bat """
                     @echo off
-                    :: Set temporary environment variables for the AWS CLI
+                    :: Set the variables for the AWS CLI to use
                     set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
                     set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
 
