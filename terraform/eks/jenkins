@@ -46,28 +46,26 @@ pipeline {
             }
         }
 
-        stage('Deploy to EKS') {
-            steps {
-                withCredentials([
-                    string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
-                    string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
-                ]) {
-                    script {
-                        sh """
-                        echo "Checking AWS Identity..."
-                        aws sts get-caller-identity
-
-                        echo "Updating Kubeconfig for EKS..."
-                        aws eks update-kubeconfig --region ap-south-2 --name clusters
-
-                        echo "Deploying to Kubernetes..."
-                        # Ensure you are in the directory where yaml files exist
-                        kubectl apply -f deployment.yaml
-                        kubectl apply -f service.yaml
-                        """
-                    }
-                }
-            }
+      stage('Build & Push to ECR') {
+    steps {
+        // Use the AWS Credentials binding for the 'AWS Credentials' type
+        withCredentials([[
+            $class: 'AmazonWebServicesCredentialsBinding', 
+            credentialsId: 'aws-ecr-creds', 
+            accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        ]]) {
+            sh """
+            # login to AWS ECR
+            aws ecr get-login-password --region ap-south-2 | docker login --username AWS --password-stdin 661268174324.dkr.ecr.ap-south-2.amazonaws.com
+            
+            # build and push
+            docker build -t git-training .
+            docker tag git-training:latest 661268174324.dkr.ecr.ap-south-2.amazonaws.com/git-training:latest
+            docker push 661268174324.dkr.ecr.ap-south-2.amazonaws.com/git-training:latest
+            """
         }
+    }
+}
     }
 }
