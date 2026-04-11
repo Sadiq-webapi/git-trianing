@@ -3,7 +3,8 @@ pipeline {
 
     environment {
         AWS_DEFAULT_REGION = "ap-south-2"
-        // It's better to define these here globally if used in multiple stages
+        ECR_REPO = "661268174324.dkr.ecr.ap-south-2.amazonaws.com/git-training"
+        CLUSTER_NAME = "clusters"
     }
 
     stages {
@@ -17,13 +18,14 @@ pipeline {
 
         stage('Terraform Init/Plan') {
             steps {
-                // Using standard string credentials as you did in your original script
-                withCredentials([
-                    string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
-                    string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
-                ]) {
+                // Use the same aws-ecr-creds for Terraform to keep it consistent
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding', 
+                    credentialsId: 'aws-ecr-creds', 
+                    accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                ]]) {
                     dir('terraform/eks') {
-                        // Changed 'bat' to 'sh' for Linux
                         sh '''
                         terraform init
                         terraform plan -out=tfplan
@@ -35,10 +37,12 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                withCredentials([
-                    string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
-                    string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
-                ]) {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding', 
+                    credentialsId: 'aws-ecr-creds', 
+                    accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                ]]) {
                     dir('terraform/eks') {
                         sh 'terraform apply -auto-approve tfplan'
                     }
@@ -46,24 +50,48 @@ pipeline {
             }
         }
 
-     stage('Build & Push to ECR') {
-    steps {
-        // Use the AWS-specific binding
-       // This syntax is specifically for the "AWS Credentials" type
-withCredentials([[
-    $class: 'AmazonWebServicesCredentialsBinding', 
-    credentialsId: 'aws-ecr-creds', 
-    accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
-    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-]]) {
-    sh """
-    aws ecr get-login-password --region ap-south-2 | docker login --username AWS --password-stdin 661268174324.dkr.ecr.ap-south-2.amazonaws.com
-    docker build -t git-training .
-    docker tag git-training:latest 661268174324.dkr.ecr.ap-south-2.amazonaws.com/git-training:latest
-    docker push 661268174324.dkr.ecr.ap-south-2.amazonaws.com/git-training:latest
-    """
-}
-    }
-}
+        stage('Build & Push to ECR') {
+            steps {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding', 
+                    credentialsId: 'aws-ecr-creds', 
+                    accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                ]]) {
+                    sh """
+                    # Authenticate Docker to ECR
+                    aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin 661268174324.dkr.ecr.ap-south-2.amazonaws.com
+                    
+                    # Build, Tag, and Push
+                    docker build -t git-training .
+                    docker tag git-training:latest ${ECR_REPO}:latest
+                    docker push ${ECR_REPO}:latest
+                    """
+                }
+            }
+        }
+
+        stage('Deploy to EKS') {
+            steps {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding', 
+                    credentialsId: 'aws-ecr-creds', 
+                    accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                ]]) {
+                    sh """
+                    # Update kubeconfig to point to your cluster
+                    aws eks update-kubeconfig --region ${AWS_DEFAULT_REGION} --name ${CLUSTER_NAME}
+                    
+                    # Apply Kubernetes manifests
+                    kubectl apply -f deployment.yaml
+                    kubectl apply -f service.yaml
+                    
+                    # Force update if image tag is 'latest'
+                    kubectl rollout restart deployment/git-training
+                    """
+                }
+            }
+        }
     }
 }
