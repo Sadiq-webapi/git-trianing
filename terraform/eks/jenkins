@@ -29,28 +29,29 @@ pipeline {
             }
         }
 
-      stage('Deploy to EKS & Load Balancer') {
+     stage('Deploy to EKS & Load Balancer') {
             steps {
-                // Use usernamePassword because your 'aws-ecr-creds' has the phone icon
                 withCredentials([usernamePassword(credentialsId: 'aws-ecr-creds', 
                                                  usernameVariable: 'AWS_ACCESS_KEY_ID', 
                                                  passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    bat """
-                    @echo off
-                    :: Set the variables for the AWS CLI to use
-                    set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
-                    set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
+                    // Use dir() to move into the folder where your yaml files are
+                    dir('dockers/dockerimage') {
+                        bat """
+                        @echo off
+                        set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
+                        set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
 
-                    :: Sync Kubeconfig
-                    aws eks update-kubeconfig --region %AWS_DEFAULT_REGION% --name %CLUSTER_NAME%
+                        :: Sync Kubeconfig
+                        aws eks update-kubeconfig --region %AWS_DEFAULT_REGION% --name %CLUSTER_NAME%
 
-                    :: Apply Deployment and Load Balancer Service
-                    kubectl apply -f deployment.yaml
-                    kubectl apply -f service.yaml
+                        :: Apply Deployment and Load Balancer Service
+                        kubectl apply -f deployment.yaml
+                        kubectl apply -f service.yaml
 
-                    :: Force restart to pull the 'latest' image
-                    kubectl rollout restart deployment/git-training
-                    """
+                        :: Force restart
+                        kubectl rollout restart deployment/git-training
+                        """
+                    }
                 }
             }
         }
