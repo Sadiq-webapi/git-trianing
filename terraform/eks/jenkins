@@ -3,77 +3,69 @@ pipeline {
     environment {
         AWS_DEFAULT_REGION = "ap-south-2"
         CLUSTER_NAME = "clusters"
+        DOCKER_IMAGE = "mohamedsadiq9741/myapp"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // This pulls the latest code from your git-trianing repo
                 checkout scm
             }
         }
-stage('Build with Maven') {
+
+        stage('Build with Maven') {
             steps {
-                // This creates the executable JAR with the manifest attribute
-                bat "mvn clean package -DskipTests"
+                // Changed 'bat' to 'sh' for Linux
+                sh "mvn clean package -DskipTests"
             }
         }
+
         stage('Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', 
                                                  usernameVariable: 'DOCKER_USER', 
                                                  passwordVariable: 'DOCKER_PASS')]) {
-                    bat """
-                    @echo off
-                    echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                    sh """
+                    echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
                     
-                    :: Build and tag images
-                    docker build -t mohamedsadiq9741/myapp:%BUILD_NUMBER% .
-                    docker tag mohamedsadiq9741/myapp:%BUILD_NUMBER% mohamedsadiq9741/myapp:latest
+                    docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .
+                    docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest
                     
-                    :: Push to Docker Hub
-                    docker push mohamedsadiq9741/myapp:%BUILD_NUMBER%
-                    docker push mohamedsadiq9741/myapp:latest
+                    docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}
+                    docker push ${DOCKER_IMAGE}:latest
                     """
                 }
             }
         }
 
-    stage('Deploy to EKS & Load Balancer') {
-    steps {
-        // 1. Use your working AWS credentials
-        withCredentials([usernamePassword(credentialsId: 'sadiq-aws', 
-                                         usernameVariable: 'AWS_ACCESS_KEY_ID', 
-                                         passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-            
-            // 2. Wrap this in your Kubeconfig Secret File
-            withCredentials([file(credentialsId: 'eks-kubeconfig', variable: 'KUBECONFIG')]) {
-                
-                dir('terraform/eks') {
-                    // Use 'sh' for Linux/EC2 Jenkins or 'bat' for Windows Jenkins
-                    sh """
-                    export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-                    export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-                    export AWS_DEFAULT_REGION=ap-south-2
-                    export KUBECONFIG=${KUBECONFIG}
+        stage('Deploy to EKS & Load Balancer') {
+            steps {
+                withCredentials([
+                    usernamePassword(credentialsId: 'sadiq-aws', 
+                                     usernameVariable: 'AWS_ACCESS_KEY_ID', 
+                                     passwordVariable: 'AWS_SECRET_ACCESS_KEY'),
+                    file(credentialsId: 'eks-kubeconfig', variable: 'KUBECONFIG')
+                ]) {
+                    dir('terraform/eks') {
+                        sh """
+                        export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+                        export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+                        export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+                        export KUBECONFIG=${KUBECONFIG}
+                        
+                        # Apply Kubernetes manifests
+                        kubectl apply -f deployment.yaml
+                        kubectl apply -f service.yaml
 
-                    # No need for 'update-kubeconfig' because we are providing the file directly via KUBECONFIG
-                    
-                    # Apply the manifests
-                    kubectl apply -f deployment.yaml
-                    kubectl apply -f service.yaml
-
-                    # Ensure the image is updated to the latest one from ECR
-                    kubectl set image deployment/my-web-deployment web-container=661268174324.dkr.ecr.ap-south-2.amazonaws.com/git-training:latest
-                    
-                    # Force the pods to refresh
-                    kubectl rollout restart deployment/my-web-deployment
-                    """
+                        # Update the deployment to use the image we just pushed to Docker Hub
+                        kubectl set image deployment/my-web-deployment web-container=${DOCKER_IMAGE}:latest
+                        
+                        # Force refresh
+                        kubectl rollout restart deployment/my-web-deployment
+                        """
+                    }
                 }
             }
         }
     }
 }
-        }
-    } // End of Stages
-} // End of Pipeline
