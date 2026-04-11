@@ -41,7 +41,7 @@ pipeline {
      stage('Deploy to EKS & Load Balancer') {
     steps {
         withCredentials([
-            usernamePassword(credentialsId: 'sadiq-aws', 
+            usernamePassword(credentialsId: 'aws-ecr-creds', 
                              usernameVariable: 'AWS_ACCESS_KEY_ID', 
                              passwordVariable: 'AWS_SECRET_ACCESS_KEY'),
             file(credentialsId: 'eks-kubeconfig', variable: 'KUBE_PATH')
