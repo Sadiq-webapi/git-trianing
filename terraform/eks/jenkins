@@ -39,31 +39,41 @@ stage('Build with Maven') {
             }
         }
 
-      stage('Deploy to EKS & Load Balancer') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'aws-ecr-creds', 
-                                                 usernameVariable: 'AWS_ACCESS_KEY_ID', 
-                                                 passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    // This is the fix: Enter the folder shown in your image
-                    dir('terraform/eks') {
-                        bat """
-                        @echo off
-                        set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
-                        set AWS_SECRET_ACCESS_KEY=%AWS_SECRET_ACCESS_KEY%
+    stage('Deploy to EKS & Load Balancer') {
+    steps {
+        // 1. Use your working AWS credentials
+        withCredentials([usernamePassword(credentialsId: 'sadiq-aws', 
+                                         usernameVariable: 'AWS_ACCESS_KEY_ID', 
+                                         passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+            
+            // 2. Wrap this in your Kubeconfig Secret File
+            withCredentials([file(credentialsId: 'eks-kubeconfig', variable: 'KUBECONFIG')]) {
+                
+                dir('terraform/eks') {
+                    // Use 'sh' for Linux/EC2 Jenkins or 'bat' for Windows Jenkins
+                    sh """
+                    export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+                    export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+                    export AWS_DEFAULT_REGION=ap-south-2
+                    export KUBECONFIG=${KUBECONFIG}
 
-                        :: Authenticate with the EKS cluster
-                        aws eks update-kubeconfig --region %AWS_DEFAULT_REGION% --name %CLUSTER_NAME%
+                    # No need for 'update-kubeconfig' because we are providing the file directly via KUBECONFIG
+                    
+                    # Apply the manifests
+                    kubectl apply -f deployment.yaml
+                    kubectl apply -f service.yaml
 
-                        :: Apply the files from inside this folder
-                        kubectl apply -f deployment.yaml
-                        kubectl apply -f service.yaml
-
-                        :: Force the update
-                        kubectl rollout restart deployment/git-training
-                        """
-                    }
+                    # Ensure the image is updated to the latest one from ECR
+                    kubectl set image deployment/my-web-deployment web-container=661268174324.dkr.ecr.ap-south-2.amazonaws.com/git-training:latest
+                    
+                    # Force the pods to refresh
+                    kubectl rollout restart deployment/my-web-deployment
+                    """
                 }
             }
+        }
+    }
+}
         }
     } // End of Stages
 } // End of Pipeline
