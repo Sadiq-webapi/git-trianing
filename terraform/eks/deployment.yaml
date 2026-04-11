@@ -18,7 +18,7 @@ spec:
       - name: app-container
         # --- ACTION REQUIRED HERE ---
         # Replace the URL below with your actual ECR repository image URI.
-        image: <YOUR_AWS_ACCOUNT_ID>.dkr.ecr.ap-south-2.amazonaws.com/git-training:latest
+        image: mohamedsadiq9741/myapp
         ports:
         - containerPort: 80 # The port your application inside the container listens on
         resources:
