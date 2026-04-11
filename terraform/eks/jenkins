@@ -12,7 +12,12 @@ pipeline {
                 checkout scm
             }
         }
-
+stage('Build with Maven') {
+            steps {
+                // This creates the executable JAR with the manifest attribute
+                bat "mvn clean package -DskipTests"
+            }
+        }
         stage('Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', 
