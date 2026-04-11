@@ -59,7 +59,7 @@ stage('Deploy to EKS') {
                     aws sts get-caller-identity
 
                     echo "Updating Kubeconfig for EKS..."
-                    aws eks update-kubeconfig --region ap-south-2 --name your-cluster-name
+                    aws eks update-kubeconfig --region ap-south-2 --name clusters
 
                     echo "Deploying to Kubernetes..."
                     # Use the correct path found by your 'dir' command earlier
