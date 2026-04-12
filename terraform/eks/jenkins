@@ -38,7 +38,7 @@ pipeline {
             }
         }
 
-     stage('Deploy to EKS & Load Balancer') {
+    stage('Deploy to EKS & Load Balancer') {
     steps {
         withCredentials([
             usernamePassword(credentialsId: 'aws-ecr-creds', 
@@ -47,8 +47,6 @@ pipeline {
             file(credentialsId: 'eks-kubeconfig', variable: 'KUBE_PATH')
         ]) {
             dir('terraform/eks') {
-                // Use 'bat' for Windows Jenkins
-                // Use single quotes (''' ''') to keep secrets secure and handle Windows paths correctly
                 bat '''
                 @echo off
                 set AWS_ACCESS_KEY_ID=%AWS_ACCESS_KEY_ID%
@@ -56,6 +54,9 @@ pipeline {
                 set AWS_DEFAULT_REGION=ap-south-2
                 set KUBECONFIG=%KUBE_PATH%
                 
+                echo Refreshing connection details...
+                aws eks update-kubeconfig --region ap-south-2 --name clusters
+
                 echo Validating connection...
                 kubectl get nodes
 
