@@ -65,10 +65,10 @@ pipeline {
                 kubectl apply -f service.yaml
 
                 echo Updating image to Docker Hub latest...
-                kubectl set image deployment/my-web-deployment web-container=mohamedsadiq9741/myapp:latest
+                kubectl set image deployment/git-training web-container=mohamedsadiq9741/myapp:latest
                 
                 echo Restarting deployment...
-                kubectl rollout restart deployment/my-web-deployment
+                kubectl rollout restart deployment/git-training
                 '''
             }
         }
