@@ -11,7 +11,3 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # 4. Final Stage: Create the small runner image
-FROM eclipse-temurin:21-jre
-WORKDIR /app
-COPY --from=builder /app/target/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
